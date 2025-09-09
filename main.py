@@ -10,11 +10,20 @@ from sqlalchemy import (
     CheckConstraint, UniqueConstraint, ForeignKey
 )
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 # ── Config BD ───────────────────────────────────────────────────────────────────
-DATABASE_URL = "sqlite:///./game.db"
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL no está definida. Verifica tu entorno o archivo .env")
 # DATABASE_URL = "sqlite:///C:/api-libro-interactivo/game.db"
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
+
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()
 
@@ -37,21 +46,18 @@ LEVEL_REWARDS = {
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    document = Column(String, nullable=False)  # login por documento
-    name = Column(String, nullable=False)
-    school = Column(String, nullable=False)
-    gender = Column(String, nullable=False)
-    money = Column(String, nullable=False, default="0")  # string, como pediste
+    document = Column(String(100), nullable=False)  # login por documento
+    name = Column(String(100), nullable=False)
+    school = Column(String(50), nullable=False)
+    gender = Column(String(20), nullable=False)
+    money = Column(String(20), nullable=False, default="0")  # string, como pediste
     level = Column(Integer, nullable=False, default=1)
-
-    # created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
         UniqueConstraint("document", name="uq_users_document"),
         CheckConstraint(f"school IN {SCHOOL_VALUES}", name="ck_users_school"),
         CheckConstraint(f"gender IN {GENDER_VALUES}", name="ck_users_gender"),
         CheckConstraint("level >= 1", name="ck_users_level_min"),
-
     )
 
 
@@ -86,9 +92,8 @@ class SessionToken(Base):
     __tablename__ = "sessions"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    token = Column(String, unique=True, index=True, nullable=False)
+    token = Column(String(255), unique=True, index=True, nullable=False)
     expires_at = Column(DateTime, index=True, nullable=False)
-
 
 Base.metadata.create_all(bind=engine)
 
