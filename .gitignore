@@ -1,0 +1,31 @@
+# ── Entorno virtual ──
+.venv/
+venv/
+ENV/
+env/
+
+# ── Archivos de configuración y sistema ──
+.idea/
+.vscode/
+__pycache__/
+*.py[cod]
+*.so
+*.swp
+.DS_Store
+Thumbs.db
+
+# ── Archivos sensibles ──
+.env
+*.env
+
+# ── Base de datos local ──
+*.db
+*.sqlite3
+
+# ── Archivos de logs ──
+*.log
+
+# ── Archivos temporales ──
+*.bak
+*.tmp
+data/
